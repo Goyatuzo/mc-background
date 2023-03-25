@@ -51,8 +51,8 @@ async def store_stats_in_database():
 		conn.commit()
 		print("Done updating player stats")
 									
-		# Run this in 30 minutes time
-		await asyncio.sleep(1800)
+		# Run this in 10 minutes time
+		await asyncio.sleep(600)
 
 def clean_stats_json(loaded_json: dict) -> dict:
 	"""JSON loads makes each element in the stats file
