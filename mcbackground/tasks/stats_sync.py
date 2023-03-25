@@ -43,7 +43,7 @@ async def store_stats_in_database():
 					user_data = clean_stats_json(loads(f))
 
 					# Process the loaded data
-					parsed_data = (str(uuid.uuid4()), parsed_date, uniq_id, dumps(user_data['DataVersion']), dumps(clean_stats_json(loads(f))))
+					parsed_data = (str(uuid.uuid4()), parsed_date.strftime('%Y-%m-%dT%H:%M:%S.000Z'), uniq_id, dumps(user_data['DataVersion']), dumps(user_data["stats"]))
 					user_datas.append(parsed_data)
 
 				cursor.executemany("INSERT OR IGNORE INTO PlayerStats (id, date, userId, dataVersion, stats) VALUES (?, ?, ?, ?, ?)", user_datas)
