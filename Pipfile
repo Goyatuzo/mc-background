@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 python-dotenv = "*"
-smbprotocol = "*"
 
 [dev-packages]
 
