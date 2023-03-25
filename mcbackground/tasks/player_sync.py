@@ -23,6 +23,6 @@ async def store_players_in_database():
 				print(f"Updated {len(cleaned_users)} users")
 
 			# Run this in 10 minutes time
-			await asyncio.sleep(10)
+			await asyncio.sleep(600)
 	except Exception as e:
 		print(e)
