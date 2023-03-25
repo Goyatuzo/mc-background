@@ -1,12 +1,15 @@
 import asyncio
+import uuid 
 from zipfile import ZipFile
 from os import listdir, path
-from json import loads
+from json import loads, dumps
 from datetime import datetime
 
+from ..db import conn
 from ..servernet import get_server_file
 
 async def store_stats_in_database():
+	cursor = conn.cursor()
 	# Periodically call the same method by looping indefinitely
 	while True:
 		print("Preparing to update player stats...")
@@ -27,6 +30,7 @@ async def store_stats_in_database():
 			parsed_date = datetime.strptime(raw_date, "%Y-%m-%d-%H-%M-%S")
 
 			with ZipFile(path.join(backups_folder, fname), 'r') as zf:
+				user_datas = []
 				# Could potentially break if some other stats folder comes into play.
 				stats_fnames = [f for f in zf.namelist() if f.startswith(f"world{path.sep}stats{path.sep}") and f.endswith(".json")]
 
@@ -36,16 +40,17 @@ async def store_stats_in_database():
 					uniq_id = stat_fname.split(path.sep)[-1][:-5]
 
 					f = zf.read(stat_fname)
+					user_data = clean_stats_json(loads(f))
 
 					# Process the loaded data
-					user_data = clean_stats_json(loads(f))
-					user_data["user_id"] = uniq_id
-					user_data["date"] = parsed_date
+					parsed_data = (str(uuid.uuid4()), parsed_date, uniq_id, dumps(user_data['DataVersion']), dumps(clean_stats_json(loads(f))))
+					user_datas.append(parsed_data)
 
-					# Store the most recent data into the dict
-					data_by_date[f"{parsed_date}{uniq_id}"] = user_data
-					
-				
+				cursor.executemany("INSERT OR IGNORE INTO PlayerStats (id, date, userId, dataVersion, stats) VALUES (?, ?, ?, ?, ?)", user_datas)
+
+		conn.commit()
+		print("Done updating player stats")
+									
 		# Run this in 30 minutes time
 		await asyncio.sleep(1800)
 
